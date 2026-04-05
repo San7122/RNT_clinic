@@ -250,6 +250,9 @@ export default function App() {
   const [activeSection, setActiveSection] = useState("home");
   const [scrolled, setScrolled] = useState(false);
   const [testimonialIdx, setTestimonialIdx] = useState(0);
+  const [form, setForm] = useState({ name: "", phone: "", message: "" });
+  const [formSent, setFormSent] = useState(false);
+  const [formError, setFormError] = useState("");
 
   const t = T[lang];
   const toggleDark = () => setDark(d => !d);
@@ -782,31 +785,64 @@ export default function App() {
                 <div className={`${dark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-100"} rounded-3xl p-6 md:p-8 border`}>
                   <h3 className={`text-xl font-bold ${tp} mb-1`} style={{ fontFamily: "'Playfair Display', serif" }}>{t.enquiryTitle}</h3>
                   <p className={`text-sm ${tm} mb-6`}>{t.enquiryDesc}</p>
-                  <div className="space-y-4">
-                    {[
-                      { label: t.yourName, ph: t.enterName, icon: User, type: "text" },
-                      { label: t.phoneNum, ph: t.enterPhone, icon: Phone, type: "tel" },
-                    ].map((f, i) => (
-                      <div key={i}>
-                        <label className={`text-sm font-medium ${dark ? "text-gray-300" : "text-gray-700"} mb-1.5 block`}>{f.label}</label>
-                        <div className="relative">
-                          <f.icon size={16} className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${tm}`} />
-                          <input type={f.type} placeholder={f.ph}
-                            className={`w-full pl-10 pr-4 py-3 ${inputCls} border rounded-xl text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all`} />
-                        </div>
+                  {formSent ? (
+                    <div className="flex flex-col items-center justify-center py-10 gap-3">
+                      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                        <BadgeCheck size={36} className="text-green-500" />
                       </div>
-                    ))}
+                      <p className={`font-semibold text-lg ${tp}`}>Enquiry Sent!</p>
+                      <p className={`text-sm ${tm} text-center`}>We received your message on WhatsApp and will get back to you shortly.</p>
+                      <button onClick={() => { setFormSent(false); setForm({ name: "", phone: "", message: "" }); }}
+                        className="mt-2 px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-xl transition-colors">
+                        Send Another
+                      </button>
+                    </div>
+                  ) : (
+                  <div className="space-y-4">
+                    <div>
+                      <label className={`text-sm font-medium ${dark ? "text-gray-300" : "text-gray-700"} mb-1.5 block`}>{t.yourName}</label>
+                      <div className="relative">
+                        <User size={16} className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${tm}`} />
+                        <input type="text" placeholder={t.enterName} value={form.name}
+                          onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                          className={`w-full pl-10 pr-4 py-3 ${inputCls} border rounded-xl text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all`} />
+                      </div>
+                    </div>
+                    <div>
+                      <label className={`text-sm font-medium ${dark ? "text-gray-300" : "text-gray-700"} mb-1.5 block`}>{t.phoneNum}</label>
+                      <div className="relative">
+                        <Phone size={16} className={`absolute left-3.5 top-1/2 -translate-y-1/2 ${tm}`} />
+                        <input type="tel" placeholder={t.enterPhone} value={form.phone}
+                          onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+                          className={`w-full pl-10 pr-4 py-3 ${inputCls} border rounded-xl text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all`} />
+                      </div>
+                    </div>
                     <div>
                       <label className={`text-sm font-medium ${dark ? "text-gray-300" : "text-gray-700"} mb-1.5 block`}>{t.message}</label>
                       <div className="relative">
                         <Mail size={16} className={`absolute left-3.5 top-3.5 ${tm}`} />
-                        <textarea rows={3} placeholder={t.howHelp}
+                        <textarea rows={3} placeholder={t.howHelp} value={form.message}
+                          onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
                           className={`w-full pl-10 pr-4 py-3 ${inputCls} border rounded-xl text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all resize-none`} />
                       </div>
                     </div>
-                    <button className="w-full py-3.5 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-teal-600/20 flex items-center justify-center gap-2">
-                      {t.sendEnquiry} <ChevronRight size={16} /></button>
+                    {formError && <p className="text-red-500 text-sm">{formError}</p>}
+                    <button
+                      onClick={() => {
+                        if (!form.name.trim() || !form.phone.trim()) {
+                          setFormError(lang === "hi" ? "कृपया नाम और फ़ोन नंबर भरें।" : "Please enter your name and phone number.");
+                          return;
+                        }
+                        setFormError("");
+                        const msg = `Hello RNT Memorial Clinic,%0AName: ${encodeURIComponent(form.name)}%0APhone: ${encodeURIComponent(form.phone)}%0AMessage: ${encodeURIComponent(form.message || "Enquiry")}`;
+                        window.open(`https://wa.me/${CLINIC.whatsapp}?text=${msg}`, "_blank");
+                        setFormSent(true);
+                      }}
+                      className="w-full py-3.5 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-teal-600/20 flex items-center justify-center gap-2">
+                      {t.sendEnquiry} <ChevronRight size={16} />
+                    </button>
                   </div>
+                  )}
                 </div>
               </Reveal>
             </div>
