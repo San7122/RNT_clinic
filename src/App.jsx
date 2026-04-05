@@ -856,6 +856,14 @@ export default function App() {
                   className="w-9 h-9 bg-gray-800 hover:bg-teal-600 rounded-lg flex items-center justify-center transition-colors"><Phone size={16} /></a>
               </div>
             </div>
+            <div className="mt-4 flex justify-center">
+              <p className="text-xs text-gray-600 tracking-wide">
+                Powered by{" "}
+                <span className="font-semibold bg-gradient-to-r from-teal-400 to-amber-400 bg-clip-text text-transparent">
+                  Varaai
+                </span>
+              </p>
+            </div>
           </div>
         </footer>
 
